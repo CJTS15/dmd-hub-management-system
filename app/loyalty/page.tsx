@@ -281,9 +281,9 @@ export default function LoyaltyPage() {
              <span className="text-sm text-slate-500">
                 Page {page + 1} of {totalPages || 1} ({filteredLoyalty.length} customers)
              </span>
-             <div className="flex gap-2">
+              <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}><ChevronLeft className="h-4 w-4" /> Previous</Button>
-                <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}><ChevronRight className="h-4 w-4" /> Next</Button>
+                <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}> Next <ChevronRight className="h-4 w-4" /></Button>
              </div>
           </div>
         </div>
