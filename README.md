@@ -59,8 +59,8 @@ A comprehensive, all-in-one management system built for **DMD Co-working Space &
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/your-username/dmd-study-hub.git
-cd dmd-study-hub
+git clone git@github.com:<your-usename>/dmd-hub-management-system.git
+cd dmd-hub-management-system
 ```
 
 ### 3. Install Dependencies
