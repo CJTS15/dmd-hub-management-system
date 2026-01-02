@@ -260,152 +260,161 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Seat</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Package</TableHead>
-                <TableHead>Check-in</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Check-out</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+        {/* --- FIXED SECTION STARTS HERE --- */}
+        {/* Added 'w-full' and 'overflow-hidden' to the card container */}
+        <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px] w-full overflow-hidden">
+          
+          {/* Added this wrapper div to handle table scrolling internally */}
+          <div className="overflow-x-auto flex-1"> 
+            <Table>
+                <TableHeader>
                 <TableRow>
-                   <TableCell colSpan={11} className="text-center h-24">
-                     <div className="flex justify-center items-center gap-2 text-slate-500">
-                        <Loader2 className="animate-spin h-4 w-4"/> Loading records...
-                     </div>
-                   </TableCell>
+                    <TableHead className="whitespace-nowrap">Date</TableHead>
+                    <TableHead className="whitespace-nowrap">Name</TableHead>
+                    <TableHead className="whitespace-nowrap">Seat</TableHead>
+                    <TableHead className="whitespace-nowrap">Type</TableHead>
+                    <TableHead className="whitespace-nowrap">Package</TableHead>
+                    <TableHead className="whitespace-nowrap">Check-in</TableHead>
+                    <TableHead className="whitespace-nowrap">Duration</TableHead>
+                    <TableHead className="whitespace-nowrap">Check-out</TableHead>
+                    <TableHead className="whitespace-nowrap">Status</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Action</TableHead>
                 </TableRow>
-              ) : bookings.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={11} className="text-center h-24 text-slate-500">
-                    No results found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                bookings.map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell>
-                      {format(new Date(booking.check_in_time), "MMM dd")}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {booking.customer_name}
-                      {booking.rentals && (
-                        <div className="text-xs text-slate-500 mt-1">
-                          Rentals: {booking.rentals}
+                </TableHeader>
+                <TableBody>
+                {loading ? (
+                    <TableRow>
+                    <TableCell colSpan={11} className="text-center h-24">
+                        <div className="flex justify-center items-center gap-2 text-slate-500">
+                            <Loader2 className="animate-spin h-4 w-4"/> Loading records...
                         </div>
-                      )}
                     </TableCell>
-                    <TableCell className="text-slate-500">
-                      {booking.seat_number || "-"}
+                    </TableRow>
+                ) : bookings.length === 0 ? (
+                    <TableRow>
+                    <TableCell colSpan={11} className="text-center h-24 text-slate-500">
+                        No results found.
                     </TableCell>
-                    <TableCell>
-                      {booking.is_student && (
-                        <Badge variant="outline" className="border-blue-200 text-blue-800 bg-blue-50">Student</Badge>
-                      )}
-                      {booking.is_board_examinee && (
-                        <Badge variant="outline" className="border-orange-200 text-orange-800 bg-orange-50">Examinee</Badge>
-                      )}
-                      {!booking.is_student && !booking.is_board_examinee && (
-                        <Badge variant="outline" className="border-gray-200 text-gray-800 bg-gray-50">Regular</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {booking.package_type === "Hourly Rate" ? (
-                        <Badge variant="outline" className="border-yellow-200 text-yellow-800 bg-yellow-50">
-                            {booking.package_type}
-                        </Badge>
-                      ) : booking.package_type === "Focus Saver" ? (
-                        <Badge variant="outline" className="border-orange-200 text-orange-800 bg-orange-50">
-                            {booking.package_type}
-                        </Badge>
-                      ) : booking.package_type === "Power Pass" ? (
-                        <Badge variant="outline" className="border-red-200 text-red-800 bg-red-50">
-                            {booking.package_type}
-                        </Badge>  
-                      ) : (
-                        <Badge variant="outline" className="border-sky-200 text-sky-800 bg-sky-50">
-                            {booking.package_type}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(booking.check_in_time), "h:mm a")}
-                    </TableCell>
-                    <TableCell>{booking.duration_hours}</TableCell>
-                    <TableCell>
-                      {booking.check_out_time 
-                        ? format(new Date(booking.check_out_time), "h:mm a") 
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className="px-4" variant={booking.status === "Active" ? "default" : "secondary"}>
-                        {booking.status}
-                        {booking.status === "Active" && (
+                    </TableRow>
+                ) : (
+                    bookings.map((booking) => (
+                    <TableRow key={booking.id}>
+                        <TableCell>
+                        {format(new Date(booking.check_in_time), "MMM dd")}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                        {booking.customer_name}
+                        {booking.rentals && (
+                            <div className="text-xs text-slate-500 mt-1">
+                            Rentals: {booking.rentals}
+                            </div>
+                        )}
+                        </TableCell>
+                        <TableCell className="text-slate-500">
+                        {booking.seat_number || "-"}
+                        </TableCell>
+                        <TableCell>
+                        {booking.is_student && (
+                            <Badge variant="outline" className="border-blue-200 text-blue-800 bg-blue-50">Student</Badge>
+                        )}
+                        {booking.is_board_examinee && (
+                            <Badge variant="outline" className="border-orange-200 text-orange-800 bg-orange-50">Examinee</Badge>
+                        )}
+                        {!booking.is_student && !booking.is_board_examinee && (
+                            <Badge variant="outline" className="border-gray-200 text-gray-800 bg-gray-50">Regular</Badge>
+                        )}
+                        </TableCell>
+                        <TableCell>
+                        {booking.package_type === "Hourly Rate" ? (
+                            <Badge variant="outline" className="border-yellow-200 text-yellow-800 bg-yellow-50 whitespace-nowrap">
+                                {booking.package_type}
+                            </Badge>
+                        ) : booking.package_type === "Focus Saver" ? (
+                            <Badge variant="outline" className="border-orange-200 text-orange-800 bg-orange-50 whitespace-nowrap">
+                                {booking.package_type}
+                            </Badge>
+                        ) : booking.package_type === "Power Pass" ? (
+                            <Badge variant="outline" className="border-red-200 text-red-800 bg-red-50 whitespace-nowrap">
+                                {booking.package_type}
+                            </Badge>  
+                        ) : (
+                            <Badge variant="outline" className="border-sky-200 text-sky-800 bg-sky-50 whitespace-nowrap">
+                                {booking.package_type}
+                            </Badge>
+                        )}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                        {format(new Date(booking.check_in_time), "h:mm a")}
+                        </TableCell>
+                        <TableCell>{booking.duration_hours}</TableCell>
+                        <TableCell className="whitespace-nowrap">
+                        {booking.check_out_time 
+                            ? format(new Date(booking.check_out_time), "h:mm a") 
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                        <div className="flex items-center gap-2">
+                            <Badge variant={booking.status === "Active" ? "default" : "secondary"}>
+                                {booking.status}
+                            </Badge>
+                            {booking.status === "Active" && (
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                    title="Extend Time"
+                                    onClick={() => setExtendingBooking(booking)}
+                                >
+                                    <Clock size={12} /> 
+                                </Button>
+                            )}
+                        </div>
+                        </TableCell>
+                        <TableCell className="text-right font-bold text-blue-700">
+                        ₱{booking.amount_paid}
+                        </TableCell>
+                        <TableCell className="text-right">
+                        <div className="flex justify-end items-center gap-1">
+                            <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-slate-500 hover:text-blue-600"
+                            title="Edit"
+                            onClick={() => setEditingBooking(booking)}
+                            >
+                            <Pencil size={14} />
+                            </Button>
+
+                            <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-slate-400 hover:text-red-600"
+                            title="Delete"
+                            onClick={() => handleDelete(booking.id)}
+                            >
+                            <Trash2 size={14} />
+                            </Button>
+
+                            {booking.status === "Active" && (
                             <Button
                                 size="icon"
-                                variant="ghost"
-                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                                title="Extend Time"
-                                onClick={() => setExtendingBooking(booking)}
+                                className="h-8 w-8 bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 shadow-none"
+                                title="Check Out"
+                                onClick={() => handleCheckOut(booking.id)}
                             >
-                                <Clock size={14} /> 
+                                <LogOut size={14} />
                             </Button>
-                        )}
-                      </Badge>  
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-blue-700">
-                      ₱{booking.amount_paid}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end items-center gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-slate-500 hover:text-blue-600"
-                          title="Edit"
-                          onClick={() => setEditingBooking(booking)}
-                        >
-                          <Pencil size={14} />
-                        </Button>
-
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-slate-400 hover:text-red-600"
-                          title="Delete"
-                          onClick={() => handleDelete(booking.id)}
-                        >
-                          <Trash2 size={14} />
-                        </Button>
-
-                        {booking.status === "Active" && (
-                          <Button
-                            size="icon"
-                            className="h-8 w-8 bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700 shadow-none"
-                            title="Check Out"
-                            onClick={() => handleCheckOut(booking.id)}
-                          >
-                            <LogOut size={14} />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                            )}
+                        </div>
+                        </TableCell>
+                    </TableRow>
+                    ))
+                )}
+                </TableBody>
+            </Table>
+          </div> 
+          {/* --- END OF TABLE WRAPPER --- */}
           
           {/* Pagination Controls */}
           <div className="p-4 border-t flex justify-between items-center bg-slate-50 mt-auto">

@@ -200,7 +200,7 @@ export default function LoyaltyPage() {
         </div>
 
         {/* Search & Table */}
-        <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px]">
+        <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px] w-full overflow-hidden">
           <div className="p-4 border-b flex flex-col sm:flex-row justify-between items-center gap-4">
             <h3 className="font-semibold flex items-center gap-2">
               All Customer Rankings
@@ -218,65 +218,68 @@ export default function LoyaltyPage() {
             </div>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-20">Rank</TableHead>
-                <TableHead>Customer Name</TableHead>
-                <TableHead className="text-center">Total Check-ins</TableHead>
-                <TableHead className="text-center">Total Hours</TableHead>
-                <TableHead className="text-right">Last Visit</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+          {/* Added this wrapper div to handle table scrolling internally */}
+          <div className="overflow-x-auto flex-1"> 
+            <Table>
+              <TableHeader>
                 <TableRow>
-                   <TableCell colSpan={5} className="text-center h-24">
-                     <div className="flex justify-center items-center gap-2 text-slate-500">
-                        <Loader2 className="animate-spin h-4 w-4"/> Calculating rankings...
-                     </div>
-                   </TableCell>
+                  <TableHead className="w-20">Rank</TableHead>
+                  <TableHead>Customer Name</TableHead>
+                  <TableHead className="text-center">Total Check-ins</TableHead>
+                  <TableHead className="text-center">Total Hours</TableHead>
+                  <TableHead className="text-right">Last Visit</TableHead>
                 </TableRow>
-              ) : visibleData.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center h-24 text-slate-500"
-                  >
-                    No customers found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                visibleData.map((stat) => (
-                    <TableRow key={stat.name}>
-                    {/* Find the TRUE rank in the original full list */}
-                    <TableCell className="font-medium">
-                        {getRankIcon(
-                        loyaltyData.findIndex((x) => x.name === stat.name)
-                        )}
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center h-24">
+                      <div className="flex justify-center items-center gap-2 text-slate-500">
+                          <Loader2 className="animate-spin h-4 w-4"/> Calculating rankings...
+                      </div>
                     </TableCell>
-                    <TableCell className="font-medium text-slate-700">
-                        {stat.name}
+                  </TableRow>
+                ) : visibleData.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center h-24 text-slate-500"
+                    >
+                      No customers found.
                     </TableCell>
-                    <TableCell className="text-center">
-                        <Badge
-                        variant="outline"
-                        className="bg-blue-50 text-blue-700 border-blue-200 text-sm px-3 py-1"
-                        >
-                        {stat.count}
-                        </Badge>
-                    </TableCell>
-                    <TableCell className="text-center text-slate-600">
-                        {stat.totalHours} hrs
-                    </TableCell>
-                    <TableCell className="text-right text-slate-500 text-sm">
-                        {format(new Date(stat.lastVisit), "MMM dd, yyyy")}
-                    </TableCell>
-                    </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                  </TableRow>
+                ) : (
+                  visibleData.map((stat) => (
+                      <TableRow key={stat.name}>
+                      {/* Find the TRUE rank in the original full list */}
+                      <TableCell className="font-medium">
+                          {getRankIcon(
+                          loyaltyData.findIndex((x) => x.name === stat.name)
+                          )}
+                      </TableCell>
+                      <TableCell className="font-medium text-slate-700">
+                          {stat.name}
+                      </TableCell>
+                      <TableCell className="text-center">
+                          <Badge
+                          variant="outline"
+                          className="bg-blue-50 text-blue-700 border-blue-200 text-sm px-3 py-1"
+                          >
+                          {stat.count}
+                          </Badge>
+                      </TableCell>
+                      <TableCell className="text-center text-slate-600">
+                          {stat.totalHours} hrs
+                      </TableCell>
+                      <TableCell className="text-right text-slate-500 text-sm">
+                          {format(new Date(stat.lastVisit), "MMM dd, yyyy")}
+                      </TableCell>
+                      </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
           {/* Pagination Controls */}
           <div className="p-4 border-t flex justify-between items-center bg-slate-50 mt-auto">

@@ -225,95 +225,100 @@ export default function FlexiPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Member Name</TableHead>
-                <TableHead>Package</TableHead>
-                <TableHead>Expiry</TableHead>
-                <TableHead>Balance</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+        {/* Added 'w-full' and 'overflow-hidden' to the card container */}
+        <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px] w-full overflow-hidden">
+          
+          {/* Added this wrapper div to handle table scrolling internally */}
+          <div className="overflow-x-auto flex-1"> 
+            <Table>
+              <TableHeader>
                 <TableRow>
-                   <TableCell colSpan={6} className="text-center h-24">
-                     <div className="flex justify-center items-center gap-2 text-slate-500">
-                        <Loader2 className="animate-spin h-4 w-4"/> Loading...
-                     </div>
-                   </TableCell>
+                  <TableHead>Member Name</TableHead>
+                  <TableHead>Package</TableHead>
+                  <TableHead>Expiry</TableHead>
+                  <TableHead>Balance</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
-              ) : members.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24 text-slate-500">
-                    No members found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                members.map((m) => (
-                  <TableRow key={m.id} className={m.status === "Checked In" ? "bg-green-50/50" : ""}>
-                    <TableCell className="font-bold text-slate-800">{m.client_name}</TableCell>
-                    <TableCell>
-                        <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
-                            {m.package_type}
-                        </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-slate-600">
-                        {format(new Date(m.expiry_date), "MMM dd, yyyy")}
-                    </TableCell>
-                    <TableCell>
-                        {m.package_type === "DMD Flexi Grind" ? (
-                            <span className={`font-mono font-bold ${m.remaining_hours < 10 ? 'text-red-600' : 'text-blue-600'}`}>
-                                {Number(m.remaining_hours).toFixed(2)} hrs
-                            </span>
-                        ) : (
-                            <span className="text-slate-400 text-xs">Unlimited (Max 5h)</span>
-                        )}
-                    </TableCell>
-                    <TableCell>
-                        {m.status === "Checked In" ? (
-                            <div className="flex items-center gap-1 text-green-600 font-bold text-xs animate-pulse">
-                                <span className="h-2 w-2 rounded-full bg-green-500"></span> Active
-                            </div>
-                        ) : (
-                            <span className="text-slate-400 text-xs">Away</span>
-                        )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                        <div className="flex justify-end items-center gap-1">
-                            {/* Check In / Out Button Logic */}
-                            {m.status !== "Checked In" ? (
-                                <Button 
-                                    size="sm" 
-                                    className="bg-green-600 hover:bg-green-700 text-white h-8"
-                                    onClick={() => handleCheckIn(m)}
-                                >
-                                    <LogIn size={14} className="mr-1" /> Check In
-                                </Button>
-                            ) : (
-                                <Button 
-                                    size="sm" 
-                                    className="bg-red-600 hover:bg-red-700 text-white h-8"
-                                    onClick={() => handleCheckOut(m)}
-                                >
-                                    <LogOut size={14} className="mr-1" /> Out
-                                </Button>
-                            )}
-
-                            {/* History/Edit could go here later */}
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-300 hover:text-red-500" onClick={() => handleDelete(m.id)}>
-                                <Trash2 size={14} />
-                            </Button>
-                        </div>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center h-24">
+                      <div className="flex justify-center items-center gap-2 text-slate-500">
+                          <Loader2 className="animate-spin h-4 w-4"/> Loading...
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : members.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center h-24 text-slate-500">
+                      No members found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  members.map((m) => (
+                    <TableRow key={m.id} className={m.status === "Checked In" ? "bg-green-50/50" : ""}>
+                      <TableCell className="font-bold text-slate-800">{m.client_name}</TableCell>
+                      <TableCell>
+                          <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
+                              {m.package_type}
+                          </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-slate-600">
+                          {format(new Date(m.expiry_date), "MMM dd, yyyy")}
+                      </TableCell>
+                      <TableCell>
+                          {m.package_type === "DMD Flexi Grind" ? (
+                              <span className={`font-mono font-bold ${m.remaining_hours < 10 ? 'text-red-600' : 'text-blue-600'}`}>
+                                  {Number(m.remaining_hours).toFixed(2)} hrs
+                              </span>
+                          ) : (
+                              <span className="text-slate-400 text-xs">Unlimited (Max 5h)</span>
+                          )}
+                      </TableCell>
+                      <TableCell>
+                          {m.status === "Checked In" ? (
+                              <div className="flex items-center gap-1 text-green-600 font-bold text-xs animate-pulse">
+                                  <span className="h-2 w-2 rounded-full bg-green-500"></span> Active
+                              </div>
+                          ) : (
+                              <span className="text-slate-400 text-xs">Away</span>
+                          )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                          <div className="flex justify-end items-center gap-1">
+                              {/* Check In / Out Button Logic */}
+                              {m.status !== "Checked In" ? (
+                                  <Button 
+                                      size="sm" 
+                                      className="bg-green-600 hover:bg-green-700 text-white h-8"
+                                      onClick={() => handleCheckIn(m)}
+                                  >
+                                      <LogIn size={14} className="mr-1" /> Check In
+                                  </Button>
+                              ) : (
+                                  <Button 
+                                      size="sm" 
+                                      className="bg-red-600 hover:bg-red-700 text-white h-8"
+                                      onClick={() => handleCheckOut(m)}
+                                  >
+                                      <LogOut size={14} className="mr-1" /> Out
+                                  </Button>
+                              )}
+
+                              {/* History/Edit could go here later */}
+                              <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-300 hover:text-red-500" onClick={() => handleDelete(m.id)}>
+                                  <Trash2 size={14} />
+                              </Button>
+                          </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
           {/* Pagination */}
           <div className="p-4 border-t flex justify-between items-center bg-slate-50 mt-auto">

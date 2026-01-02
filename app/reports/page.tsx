@@ -524,39 +524,43 @@ export default function Reports() {
         </div>
 
         {/* 4. Detailed Table */}
-        <div className="bg-white rounded-lg shadow border flex flex-col">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-center">Check-ins</TableHead>
-                <TableHead>Hub</TableHead>
-                <TableHead>Exclusive</TableHead>
-                <TableHead>Flexi</TableHead>
-                <TableHead>Pantry</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visibleData.map((item) => (
-                  <TableRow key={item.date}>
-                    <TableCell className="font-medium text-slate-600">{format(parseISO(item.date), "MMM dd, yyyy")}</TableCell>
-                    <TableCell className="text-center font-bold text-slate-800">{item.checkIns}</TableCell>
-                    <TableCell>₱{item.timesheet.toLocaleString()}</TableCell>
-                    <TableCell className={item.exclusive > 0 ? "text-purple-600 font-medium" : "text-slate-400"}>
-                        {item.exclusive > 0 ? `₱${item.exclusive.toLocaleString()}` : "-"}
-                    </TableCell>
-                    <TableCell className={item.flexi > 0 ? "text-orange-600 font-medium" : "text-slate-400"}>
-                        {item.flexi > 0 ? `₱${item.flexi.toLocaleString()}` : "-"}
-                    </TableCell>
-                    <TableCell className={item.pantry > 0 ? "text-emerald-600 font-medium" : "text-slate-400"}>
-                        {item.pantry > 0 ? `₱${item.pantry.toLocaleString()}` : "-"}
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-slate-900">₱{item.total.toLocaleString()}</TableCell>
-                  </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        {/* Added 'w-full' and 'overflow-hidden' to the card container */}
+        <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px] w-full overflow-hidden">
+          {/* Added this wrapper div to handle table scrolling internally */}
+          <div className="overflow-x-auto flex-1">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-center">Check-ins</TableHead>
+                  <TableHead>Hub</TableHead>
+                  <TableHead>Exclusive</TableHead>
+                  <TableHead>Flexi</TableHead>
+                  <TableHead>Pantry</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleData.map((item) => (
+                    <TableRow key={item.date}>
+                      <TableCell className="font-medium text-slate-600">{format(parseISO(item.date), "MMM dd, yyyy")}</TableCell>
+                      <TableCell className="text-center font-bold text-slate-800">{item.checkIns}</TableCell>
+                      <TableCell>₱{item.timesheet.toLocaleString()}</TableCell>
+                      <TableCell className={item.exclusive > 0 ? "text-purple-600 font-medium" : "text-slate-400"}>
+                          {item.exclusive > 0 ? `₱${item.exclusive.toLocaleString()}` : "-"}
+                      </TableCell>
+                      <TableCell className={item.flexi > 0 ? "text-orange-600 font-medium" : "text-slate-400"}>
+                          {item.flexi > 0 ? `₱${item.flexi.toLocaleString()}` : "-"}
+                      </TableCell>
+                      <TableCell className={item.pantry > 0 ? "text-emerald-600 font-medium" : "text-slate-400"}>
+                          {item.pantry > 0 ? `₱${item.pantry.toLocaleString()}` : "-"}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-slate-900">₱{item.total.toLocaleString()}</TableCell>
+                    </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           
           {/* Pagination */}
           <div className="p-4 border-t flex justify-between items-center bg-slate-50">

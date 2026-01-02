@@ -117,82 +117,87 @@ export default function PackagePage() {
         </div>
 
         {/* Table Section */}
-        <div className="bg-white rounded-lg shadow border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+         {/* Added 'w-full' and 'overflow-hidden' to the card container */}
+        <div className="bg-white rounded-lg shadow border flex flex-col w-full overflow-hidden">
+          {/* Added this wrapper div to handle table scrolling internally */}
+          <div className="overflow-x-auto flex-1"> 
+          
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center h-24 text-slate-500"
-                  >
-                    Loading packages...
-                  </TableCell>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : packages.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center h-24 text-slate-500"
-                  >
-                    No packages found. Add one to get started.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                packages.map((pkg) => (
-                  <TableRow key={pkg.id}>
-                    <TableCell className="font-medium flex items-center gap-2">
-                      {pkg.name}
-                    </TableCell>
-                    <TableCell>₱{pkg.price}</TableCell>
-                    <TableCell>
-                      {pkg.duration > 0 ? pkg.duration : "Variable"}
-                    </TableCell>
-                    <TableCell>
-                      {pkg.is_hourly ? (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">
-                          Per Hour
-                        </span>
-                      ) : (
-                        <span className="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded font-medium">
-                          Fixed Bundle
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-slate-500 hover:text-blue-600"
-                          onClick={() => setEditingItem(pkg)}
-                        >
-                          <Pencil size={14} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-slate-400 hover:text-red-500"
-                          onClick={() => handleDelete(pkg.id)}
-                        >
-                          <Trash2 size={14} />
-                        </Button>
-                      </div>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center h-24 text-slate-500"
+                    >
+                      Loading packages...
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : packages.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center h-24 text-slate-500"
+                    >
+                      No packages found. Add one to get started.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  packages.map((pkg) => (
+                    <TableRow key={pkg.id}>
+                      <TableCell className="font-medium flex items-center gap-2">
+                        {pkg.name}
+                      </TableCell>
+                      <TableCell>₱{pkg.price}</TableCell>
+                      <TableCell>
+                        {pkg.duration > 0 ? pkg.duration : "Variable"}
+                      </TableCell>
+                      <TableCell>
+                        {pkg.is_hourly ? (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">
+                            Per Hour
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded font-medium">
+                            Fixed Bundle
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-500 hover:text-blue-600"
+                            onClick={() => setEditingItem(pkg)}
+                          >
+                            <Pencil size={14} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-red-500"
+                            onClick={() => handleDelete(pkg.id)}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
 
         {/* Edit Dialog - Controlled by State */}

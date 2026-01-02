@@ -187,119 +187,124 @@ export default function ExclusivePage() {
         </Dialog>
 
         {/* Table */}
-        <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Pax</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+        {/* Added 'w-full' and 'overflow-hidden' to the card container */}
+        <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px] w-full overflow-hidden">
+          
+          {/* Added this wrapper div to handle table scrolling internally */}
+          <div className="overflow-x-auto flex-1"> 
+            <Table>
+              <TableHeader>
                 <TableRow>
-                   <TableCell colSpan={8} className="text-center h-24">
-                     <div className="flex justify-center items-center gap-2 text-slate-500">
-                        <Loader2 className="animate-spin h-4 w-4"/> Loading...
-                     </div>
-                   </TableCell>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Pax</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : bookings.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center h-24 text-slate-500">
-                    No exclusive bookings found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                bookings.map((b) => (
-                  <TableRow key={b.id}>
-                    <TableCell className="font-medium text-slate-700">
-                      {format(new Date(b.booking_date), "MMM dd, yyyy")}
-                    </TableCell>
-                    <TableCell className="font-medium">{b.client_name}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        {formatTime(b.start_time)} - {formatTime(b.end_time)}
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center h-24">
+                      <div className="flex justify-center items-center gap-2 text-slate-500">
+                          <Loader2 className="animate-spin h-4 w-4"/> Loading...
                       </div>
                     </TableCell>
-                    <TableCell>{b.duration_hours} hrs</TableCell>
-                    {/* UPDATED PAX CELL */}
-                    <TableCell>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="ghost" className="h-auto p-0 hover:bg-transparent hover:text-blue-600 flex items-center gap-1">
-                                    <Users size={14} className="text-slate-400"/> 
-                                    <span className="font-semibold underline decoration-dotted underline-offset-4">
-                                        {b.pax}
-                                    </span>
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-60 p-0">
-                                <div className="p-3 bg-slate-50 border-b font-medium text-sm text-slate-500">
-                                    Guest List
-                                </div>
-                                <div className="p-3 max-h-60 overflow-y-auto">
-                                    {b.guest_list ? (
-                                        <ul className="list-disc list-inside space-y-1 text-sm text-slate-700">
-                                            {b.guest_list.split("\n").map((name: string, i: number) => (
-                                                name.trim() && <li key={i}>{name}</li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-sm text-slate-400 italic">No names provided.</p>
-                                    )}
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={b.status === "Confirmed" ? "default" : "secondary"} className={b.status === "Confirmed" ? "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200" : ""}>
-                        {b.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-green-700">
-                      ₱{b.amount_paid.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                            {b.status === "Confirmed" && (
-                                <Button size="sm" variant="ghost" className="h-8 text-blue-600" onClick={() => handleMarkComplete(b.id)}>
-                                    Finish
-                                </Button>
-                            )}
-                            
-                            {/* EDIT BUTTON */}
-                            <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-8 w-8 text-slate-500 hover:text-blue-600" 
-                                onClick={() => setEditingBooking(b)}
-                            >
-                                <Pencil size={14} />
-                            </Button>
-
-                            {/* DELETE BUTTON */}
-                            <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-8 w-8 text-slate-400 hover:text-red-600" 
-                                onClick={() => handleDelete(b.id)}
-                            >
-                                <Trash2 size={14} />
-                            </Button>
-                        </div>
+                  </TableRow>
+                ) : bookings.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center h-24 text-slate-500">
+                      No exclusive bookings found.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  bookings.map((b) => (
+                    <TableRow key={b.id}>
+                      <TableCell className="font-medium text-slate-700">
+                        {format(new Date(b.booking_date), "MMM dd, yyyy")}
+                      </TableCell>
+                      <TableCell className="font-medium">{b.client_name}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          {formatTime(b.start_time)} - {formatTime(b.end_time)}
+                        </div>
+                      </TableCell>
+                      <TableCell>{b.duration_hours} hrs</TableCell>
+                      {/* UPDATED PAX CELL */}
+                      <TableCell>
+                          <Popover>
+                              <PopoverTrigger asChild>
+                                  <Button variant="ghost" className="h-auto p-0 hover:bg-transparent hover:text-blue-600 flex items-center gap-1">
+                                      <Users size={14} className="text-slate-400"/> 
+                                      <span className="font-semibold underline decoration-dotted underline-offset-4">
+                                          {b.pax}
+                                      </span>
+                                  </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-60 p-0">
+                                  <div className="p-3 bg-slate-50 border-b font-medium text-sm text-slate-500">
+                                      Guest List
+                                  </div>
+                                  <div className="p-3 max-h-60 overflow-y-auto">
+                                      {b.guest_list ? (
+                                          <ul className="list-disc list-inside space-y-1 text-sm text-slate-700">
+                                              {b.guest_list.split("\n").map((name: string, i: number) => (
+                                                  name.trim() && <li key={i}>{name}</li>
+                                              ))}
+                                          </ul>
+                                      ) : (
+                                          <p className="text-sm text-slate-400 italic">No names provided.</p>
+                                      )}
+                                  </div>
+                              </PopoverContent>
+                          </Popover>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={b.status === "Confirmed" ? "default" : "secondary"} className={b.status === "Confirmed" ? "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200" : ""}>
+                          {b.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-green-700">
+                        ₱{b.amount_paid.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                              {b.status === "Confirmed" && (
+                                  <Button size="sm" variant="ghost" className="h-8 text-blue-600" onClick={() => handleMarkComplete(b.id)}>
+                                      Finish
+                                  </Button>
+                              )}
+                              
+                              {/* EDIT BUTTON */}
+                              <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-8 w-8 text-slate-500 hover:text-blue-600" 
+                                  onClick={() => setEditingBooking(b)}
+                              >
+                                  <Pencil size={14} />
+                              </Button>
+
+                              {/* DELETE BUTTON */}
+                              <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-8 w-8 text-slate-400 hover:text-red-600" 
+                                  onClick={() => handleDelete(b.id)}
+                              >
+                                  <Trash2 size={14} />
+                              </Button>
+                          </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
           {/* Pagination */}
           <div className="p-4 border-t flex justify-between items-center bg-slate-50 mt-auto">
