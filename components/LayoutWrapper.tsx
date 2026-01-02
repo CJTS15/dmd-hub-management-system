@@ -2,23 +2,24 @@
 
 import { usePathname } from "next/navigation";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/SideBar";
+import { AppSidebar } from "@/components/SideBar"; 
 import { Toaster } from "@/components/ui/sonner";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
 
-  // If on Login page, return children ONLY (No Sidebar)
+  // CASE 1: Login Page (Render content + Toaster, NO Sidebar)
   if (isLoginPage) {
-    return 
-    <main className="w-full min-h-screen bg-slate-50">
+    return (
+      <main className="w-full min-h-screen bg-slate-100 flex items-center justify-center">
         {children}
         <Toaster position="top-center" />
-    </main>;
+      </main>
+    );
   }
 
-  // Otherwise, return children wrapped in Sidebar
+  // CASE 2: Internal Pages (Render Sidebar + Content + Toaster)
   return (
     <SidebarProvider>
       <AppSidebar />
