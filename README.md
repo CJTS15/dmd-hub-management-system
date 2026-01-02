@@ -196,6 +196,7 @@ The application is fully responsive.
 2. Mobile: Uses a collapsible Sheet (Hamburger menu) to maximize screen real estate.
 
 ## 📂 Project Structure
+```
 ├── src/
 │   ├── app/                 # Next.js App Router Pages
 │   │   ├── flexi/           # Flexi Membership Page
@@ -212,6 +213,7 @@ The application is fully responsive.
 │   └── lib/                 # Utilities (Supabase Client, Helpers)
 ├── public/                  # Static Assets (Logos)
 └── tailwind.config.ts       # Styling Configuration
+```
 
 ## 📄 License
 This project is proprietary software developed for **DMD Co-Working Space & Study Hub**.
