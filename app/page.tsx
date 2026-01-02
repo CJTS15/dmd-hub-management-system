@@ -412,23 +412,9 @@ export default function Dashboard() {
              <span className="text-sm text-slate-500">
                 Page {page + 1} of {totalPages || 1} ({totalCount} records)
              </span>
-             <div className="flex gap-2">
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setPage(p => Math.max(0, p - 1))}
-                    disabled={page === 0}
-                >
-                    <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-                </Button>
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setPage(p => p + 1)}
-                    disabled={page >= totalPages - 1}
-                >
-                    Next <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
+            <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}><ChevronLeft className="h-4 w-4" /> Previous</Button>
+                <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}><ChevronRight className="h-4 w-4" /> Next</Button>
              </div>
           </div>
         </div>
