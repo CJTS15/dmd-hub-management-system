@@ -345,8 +345,8 @@ export default function Reports() {
       <main className="container mx-auto p-6">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-          <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="mb-4">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Wallet className="text-emerald-600" /> Growth Insights
             </h2>

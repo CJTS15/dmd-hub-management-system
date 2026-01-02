@@ -147,13 +147,15 @@ export default function LoyaltyPage() {
       <main className="container mx-auto p-6">
         
         {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Trophy className="text-yellow-600" /> DMD Leaderboard
-          </h2>
-          <p className="text-slate-500">
-            Celebrate your most dedicated students and track the top leaderboard rankings.
-          </p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Trophy className="text-yellow-600" /> DMD Leaderboard
+            </h2>
+            <p className="text-slate-500">
+              Celebrate your most dedicated students and track the top leaderboard rankings.
+            </p>
+          </div>
         </div>
 
         {/* Top 3 Cards (Always visible) */}

@@ -86,8 +86,8 @@ export default function PackagePage() {
     <div className="min-h-screen bg-slate-50">
       <main className="container mx-auto p-6">
         {/* Header Section - Aligned like Dashboard/Pantry */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div className="mb-4">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Tag className="text-blue-600" /> Pricing & Perks
             </h2>

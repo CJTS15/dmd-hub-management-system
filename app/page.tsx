@@ -175,7 +175,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-50">
       <main className="container mx-auto p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div className="mb-8">
+          <div className="mb-4">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Calendar className="text-blue-600" /> DMD Hub Timesheet
             </h2>
