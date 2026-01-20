@@ -267,7 +267,7 @@ export default function ExclusivePage() {
                           {b.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right font-bold text-green-700">
+                      <TableCell className="text-right font-bold text-purple-700">
                         ₱{b.amount_paid.toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right">

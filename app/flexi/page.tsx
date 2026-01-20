@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import FlexiBookingForm from "@/components/FlexiBookingForm";
-import { format, differenceInMinutes } from "date-fns";
+import { format, differenceInMinutes, parseISO } from "date-fns";
 import { toast } from "sonner";
 import {
   Table,
@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -33,7 +34,7 @@ import {
   Crown,
   LogIn,
   LogOut,
-  History
+  CalendarDays // <--- Calendar Icon for History
 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
@@ -44,8 +45,17 @@ export default function FlexiPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  
+  // Dialog States
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  
+  // History Data State
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [memberLogs, setMemberLogs] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
+  // --- FETCH MEMBERS ---
   const fetchMembers = useCallback(async () => {
     setLoading(true);
     const from = page * ITEMS_PER_PAGE;
@@ -54,7 +64,7 @@ export default function FlexiPage() {
     let query = supabase
       .from("dmd_flexi_accounts")
       .select("*", { count: "exact" })
-      .order("status", { ascending: true }) // Show "Checked In" first (usually creates A-Z sort effectively)
+      .order("status", { ascending: true }) 
       .order("client_name", { ascending: true });
 
     if (searchTerm) {
@@ -74,14 +84,28 @@ export default function FlexiPage() {
     fetchMembers();
   }, [fetchMembers]);
 
+  // --- FETCH HISTORY LOGS ---
+  const handleViewHistory = async (member: any) => {
+    setSelectedMember(member);
+    setHistoryOpen(true);
+    setLoadingHistory(true);
+
+    const { data } = await supabase
+        .from("dmd_flexi_logs")
+        .select("*")
+        .eq("account_id", member.id)
+        .order("check_in_time", { ascending: false });
+
+    if (data) setMemberLogs(data);
+    setLoadingHistory(false);
+  };
+
   // --- ACTIONS ---
 
   const handleCheckIn = async (member: any) => {
-    // Check expiry
     if (new Date() > new Date(member.expiry_date)) {
         return toast.error("This package has expired.");
     }
-    // Check balance for Grind
     if (member.package_type === "DMD Flexi Grind" && member.remaining_hours <= 0) {
         return toast.error("No remaining hours.");
     }
@@ -105,25 +129,15 @@ export default function FlexiPage() {
 
     const checkOutTime = new Date();
     const checkInTime = new Date(member.last_check_in);
-    
-    // Calculate Duration
     const minutes = differenceInMinutes(checkOutTime, checkInTime);
-    // Round to 2 decimal places for hours (e.g. 1.5 hours)
     const hoursSpent = Math.round((minutes / 60) * 100) / 100;
 
-    // Logic: Monthly Focus Max 5 Hours
-    if (member.package_type === "Monthly Focus" && hoursSpent > 5) {
-        toast.warning(`Note: Session exceeded 5 hours limit (${hoursSpent} hrs).`);
-    }
-
-    // Logic: Deduct hours for Grind
     let newRemaining = member.remaining_hours;
     if (member.package_type === "DMD Flexi Grind") {
         newRemaining = Math.max(0, member.remaining_hours - hoursSpent);
     }
 
     toast.promise(async () => {
-        // 1. Log the session
         await supabase.from("dmd_flexi_logs").insert({
             account_id: member.id,
             check_in_time: member.last_check_in,
@@ -131,7 +145,6 @@ export default function FlexiPage() {
             duration_hours: hoursSpent
         });
 
-        // 2. Update Account Status
         await supabase.from("dmd_flexi_accounts").update({
             status: "Inactive",
             remaining_hours: newRemaining
@@ -140,39 +153,32 @@ export default function FlexiPage() {
         fetchMembers();
     }, {
         loading: "Checking out...",
-        success: `Logged ${hoursSpent} hours.`,
+        success: `Checked out. Used ${hoursSpent} hours.`,
         error: "Check-out failed"
     });
   };
 
-    const handleDelete = (id: string) => {
-    // 1. Show the confirmation Toast
-    toast("Are you sure you want to delete this?", {
-      description: "This action cannot be undone.",
+  const handleDelete = (id: string) => {
+    toast("Delete this membership?", {
+      description: "This cannot be undone.",
       action: {
         label: "Delete",
-        // 2. This runs only if they click "Delete"
-        onClick: async () => {
-            
-          // 3. Wrap the database call in a Promise Toast for UX feedback
+        onClick: () => {
           toast.promise(
             async () => {
               const { error } = await supabase.from("dmd_flexi_accounts").delete().eq("id", id);
-              if (error) throw error; // Trigger the error state
-              fetchMembers(); // Refresh data
+              if (error) throw error; 
+              fetchMembers(); 
             },
             {
               loading: "Deleting member...",
-              success: "Member has been deleted",
-              error: "Failed to delete member",
+              success: "Member deleted",
+              error: "Failed to delete",
             }
           );
         },
       },
-      cancel: {
-        label: "Cancel",
-        onClick: () => console.log("Cancelled"),
-      },
+      cancel: { label: "Cancel", onClick: () => {} },
     });
   };
 
@@ -181,6 +187,7 @@ export default function FlexiPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <main className="container mx-auto p-6">
+        
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="mb-4">
@@ -224,28 +231,25 @@ export default function FlexiPage() {
           </div>
         </div>
 
-        {/* Table */}
-        {/* Added 'w-full' and 'overflow-hidden' to the card container */}
+        {/* Members Table */}
         <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px] w-full overflow-hidden">
-          
-          {/* Added this wrapper div to handle table scrolling internally */}
           <div className="overflow-x-auto flex-1"> 
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Member Name</TableHead>
-                  <TableHead>Package</TableHead>
-                  <TableHead>Expiry</TableHead>
-                  <TableHead>Balance</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead className="whitespace-nowrap">Member Name</TableHead>
+                  <TableHead className="whitespace-nowrap">Package</TableHead>
+                  <TableHead className="whitespace-nowrap">Expiry</TableHead>
+                  <TableHead className="whitespace-nowrap">Balance</TableHead>
+                  <TableHead className="whitespace-nowrap">Status</TableHead>
+                  <TableHead className="text-right whitespace-nowrap">Amount</TableHead>
+                  <TableHead className="text-right whitespace-nowrap">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">
+                    <TableCell colSpan={7} className="text-center h-24">
                       <div className="flex justify-center items-center gap-2 text-slate-500">
                           <Loader2 className="animate-spin h-4 w-4"/> Loading...
                       </div>
@@ -253,7 +257,7 @@ export default function FlexiPage() {
                   </TableRow>
                 ) : members.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24 text-slate-500">
+                    <TableCell colSpan={7} className="text-center h-24 text-slate-500">
                       No members found.
                     </TableCell>
                   </TableRow>
@@ -262,11 +266,11 @@ export default function FlexiPage() {
                     <TableRow key={m.id} className={m.status === "Checked In" ? "bg-green-50/50" : ""}>
                       <TableCell className="font-bold text-slate-800">{m.client_name}</TableCell>
                       <TableCell>
-                          <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
+                          <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50 whitespace-nowrap">
                               {m.package_type}
                           </Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-slate-600">
+                      <TableCell className="text-sm text-slate-600 whitespace-nowrap">
                           {format(new Date(m.expiry_date), "MMM dd, yyyy")}
                       </TableCell>
                       <TableCell>
@@ -275,7 +279,7 @@ export default function FlexiPage() {
                                   {Number(m.remaining_hours).toFixed(2)} hrs
                               </span>
                           ) : (
-                              <span className="text-slate-400 text-xs">Unlimited (Max 5h)</span>
+                              <span className="text-slate-400 text-xs">Unlimited</span>
                           )}
                       </TableCell>
                       <TableCell>
@@ -287,16 +291,16 @@ export default function FlexiPage() {
                               <span className="text-slate-400 text-xs">Away</span>
                           )}
                       </TableCell>
-                      <TableCell className="font-bold text-green-700">
+                      <TableCell className="text-right font-bold text-orange-700">
                         ₱{m.amount_paid.toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right">
                           <div className="flex justify-end items-center gap-1">
-                              {/* Check In / Out Button Logic */}
+
                               {m.status !== "Checked In" ? (
                                   <Button 
                                       size="sm" 
-                                      className="bg-green-600 hover:bg-green-700 text-white h-8"
+                                      className="bg-green-600 hover:bg-green-700 text-white h-8 whitespace-nowrap"
                                       onClick={() => handleCheckIn(m)}
                                   >
                                       <LogIn size={14} className="mr-1" /> Check In
@@ -304,14 +308,24 @@ export default function FlexiPage() {
                               ) : (
                                   <Button 
                                       size="sm" 
-                                      className="bg-red-600 hover:bg-red-700 text-white h-8"
+                                      className="bg-red-600 hover:bg-red-700 text-white h-8 whitespace-nowrap"
                                       onClick={() => handleCheckOut(m)}
                                   >
                                       <LogOut size={14} className="mr-1" /> Out
                                   </Button>
                               )}
 
-                              {/* History/Edit could go here later */}
+                              {/* HISTORY BUTTON */}
+                              <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                  onClick={() => handleViewHistory(m)}
+                                  title="View Usage History"
+                              >
+                                  <CalendarDays size={16} />
+                              </Button>
+
                               <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-300 hover:text-red-500" onClick={() => handleDelete(m.id)}>
                                   <Trash2 size={14} />
                               </Button>
@@ -324,7 +338,6 @@ export default function FlexiPage() {
             </Table>
           </div>
 
-          {/* Pagination */}
           <div className="p-4 border-t flex justify-between items-center bg-slate-50 mt-auto">
              <span className="text-sm text-slate-500">Page {page + 1} of {totalPages || 1}</span>
               <div className="flex gap-2">
@@ -333,6 +346,72 @@ export default function FlexiPage() {
              </div>
           </div>
         </div>
+
+        {/* --- HISTORY DIALOG --- */}
+        <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+            <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                    <DialogTitle>Usage History</DialogTitle>
+                    <DialogDescription>
+                        Records for <span className="font-bold text-slate-900">{selectedMember?.client_name}</span>
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <div className="max-h-[400px] overflow-y-auto border rounded-md">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-slate-50">
+                                <TableHead>Date</TableHead>
+                                <TableHead>Time In</TableHead>
+                                <TableHead>Time Out</TableHead>
+                                <TableHead className="text-right">Used</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {loadingHistory ? (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center h-24">
+                                        <Loader2 className="animate-spin h-4 w-4 mx-auto"/>
+                                    </TableCell>
+                                </TableRow>
+                            ) : memberLogs.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center h-24 text-slate-500">
+                                        No history found.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                memberLogs.map((log) => (
+                                    <TableRow key={log.id}>
+                                        <TableCell className="text-slate-600">
+                                            {format(parseISO(log.check_in_time), "MMM dd, yyyy")}
+                                        </TableCell>
+                                        <TableCell>
+                                            {format(parseISO(log.check_in_time), "h:mm a")}
+                                        </TableCell>
+                                        <TableCell>
+                                            {log.check_out_time ? format(parseISO(log.check_out_time), "h:mm a") : "-"}
+                                        </TableCell>
+                                        <TableCell className="text-right font-mono font-bold text-slate-700">
+                                            {log.duration_hours} hrs
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+                
+                {/* Total Summary */}
+                <div className="flex justify-between items-center bg-slate-100 p-3 rounded-md text-sm">
+                    <span className="font-medium text-slate-600">Total Hours Used:</span>
+                    <span className="font-bold text-slate-900 text-lg">
+                        {memberLogs.reduce((sum, log) => sum + (Number(log.duration_hours) || 0), 0).toFixed(2)} hrs
+                    </span>
+                </div>
+            </DialogContent>
+        </Dialog>
+
       </main>
     </div>
   );
