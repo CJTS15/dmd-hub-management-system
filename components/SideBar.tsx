@@ -22,14 +22,12 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
+  useSidebar, // <--- Import this hook
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 
 // Menu items.
 const items = [
@@ -73,6 +71,7 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { state } = useSidebar(); // <--- Get current state (expanded/collapsed)
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -80,19 +79,29 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
-      <SidebarHeader className="p-4 bg-white border-b">
+    // 1. Set collapsible to "icon"
+    <Sidebar collapsible="icon">
+      
+      <SidebarHeader className="p-4 bg-white border-b h-16 flex items-center justify-center">
         <Link href="/">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/dmd-logo-trans.webp"
-              alt="DMD Hub"
-              width={180}
-              height={40}
-              className=""
-              priority
-            />
-          </div>
+          {/* 2. Conditional Rendering for Logo based on state */}
+          {state === "expanded" ? (
+            <div className="flex items-center gap-2 transition-all duration-300">
+              <Image
+                src="/dmd-logo-trans.webp"
+                alt="DMD Hub"
+                width={150}
+                height={40}
+                className="w-auto h-14 object-contain"
+                priority
+              />
+            </div>
+          ) : (
+            // Small Icon when collapsed (You can use a small logo image here if you have one)
+            <div className="flex items-center justify-center w-full transition-all duration-300">
+               <LayoutDashboard className="h-6 w-6 text-blue-600" />
+            </div>
+          )}
         </Link>
       </SidebarHeader>
 
@@ -104,6 +113,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
+                    tooltip={item.title} // <--- 3. Add tooltip for hover effect when collapsed
                     isActive={pathname === item.url}
                     className="h-12 text-slate-600 hover:text-blue-600 data-[active=true]:bg-blue-50 data-[active=true]:text-blue-700 font-medium transition-all duration-200"
                   >
@@ -124,11 +134,14 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton 
                 asChild 
+                tooltip="Sign Out" // <--- Add tooltip here too
                 onClick={handleLogout}
                 className="h-10 text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer"
             >
               <span>
-                <LogOut className="mr-2 h-4 w-4" /> Sign Out
+                <LogOut className="mr-2 h-4 w-4" /> 
+                {/* The text inside span automatically hides when collapsed because of SidebarMenuButton logic */}
+                <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
