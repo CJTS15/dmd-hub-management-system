@@ -13,7 +13,8 @@ import {
   Tag,
   LogOut,
   Gem,
-  Crown
+  Crown,
+  Settings2,
 } from "lucide-react";
 
 import {
@@ -97,7 +98,7 @@ export function AppSidebar() {
           ) : (
             // Small Icon when collapsed (You can use a small logo image here if you have one)
             <div className="flex items-center justify-center w-full transition-all duration-300">
-               <LayoutDashboard className="h-6 w-6 text-blue-600" />
+               <Settings2 className="h-6 w-6 text-blue-600" />
             </div>
           )}
         </Link>
@@ -116,7 +117,7 @@ export function AppSidebar() {
                     className="h-12 text-slate-600 hover:text-blue-600 data-[active=true]:bg-blue-50 data-[active=true]:text-blue-700 font-medium transition-all duration-200"
                   >
                     <Link href={item.url}>
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-6 w-6" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -127,7 +128,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="bg-white p-4 border-t">
+      <SidebarFooter className="bg-white border-t">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton 
@@ -137,7 +138,7 @@ export function AppSidebar() {
                 className="h-10 text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer"
             >
               <span>
-                <LogOut className="mr-2 h-4 w-4" /> 
+                <LogOut className="mr-2 h-6 w-6" /> 
                 {/* The text inside span automatically hides when collapsed because of SidebarMenuButton logic */}
                 <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
               </span>
