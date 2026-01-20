@@ -238,6 +238,7 @@ export default function FlexiPage() {
                   <TableHead>Expiry</TableHead>
                   <TableHead>Balance</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Amount</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -285,6 +286,9 @@ export default function FlexiPage() {
                           ) : (
                               <span className="text-slate-400 text-xs">Away</span>
                           )}
+                      </TableCell>
+                      <TableCell className="font-bold text-green-700">
+                        ₱{m.amount_paid.toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right">
                           <div className="flex justify-end items-center gap-1">

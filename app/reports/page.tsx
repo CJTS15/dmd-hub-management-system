@@ -56,6 +56,7 @@ import {
   Banknote,
   ShoppingBasket,
   Wallet,
+  Loader2,
   ChevronLeft,
   ChevronRight,
   Users,
@@ -63,7 +64,7 @@ import {
   TrendingUp,
   Download,
   Gem, 
-  Crown, // Icon for Flexi
+  Crown, 
   User
 } from "lucide-react";
 
@@ -133,40 +134,48 @@ export default function Reports() {
     const startDateStr = format(date.from, "yyyy-MM-dd");
     const endDateStr = date.to ? format(date.to, "yyyy-MM-dd") : startDateStr;
 
-    // 1. Fetch Timesheet (Daily/Hourly bookings)
+    // 1. Fetch Timesheet
     const { data: timesheetData } = await supabase
       .from("dmd_bookings")
       .select("check_in_time, amount_paid, package_type, is_student, is_board_examinee")
       .gte("check_in_time", `${startDateStr}T00:00:00`)
       .lte("check_in_time", `${endDateStr}T23:59:59`);
 
-    // 2. Fetch Pantry Sales
+    // 2. Fetch Pantry
     const { data: pantryData } = await supabase
       .from("dmd_pantry_transactions")
       .select("created_at, total_amount, items_summary")
       .gte("created_at", `${startDateStr}T00:00:00`)
       .lte("created_at", `${endDateStr}T23:59:59`);
 
-    // 3. Fetch Exclusive Bookings
+    // 3. Fetch Exclusive
     const { data: exclusiveData } = await supabase
       .from("dmd_exclusive_bookings")
       .select("booking_date, amount_paid, pax")
       .gte("booking_date", startDateStr)
       .lte("booking_date", endDateStr);
 
-    // 4. Fetch Flexi Sales (New Memberships)
+    // 4. Fetch Flexi Sales (Revenue)
     const { data: flexiSales } = await supabase
       .from("dmd_flexi_accounts")
       .select("created_at, amount_paid")
       .gte("created_at", `${startDateStr}T00:00:00`)
       .lte("created_at", `${endDateStr}T23:59:59`);
 
-    // 5. Fetch Flexi Traffic (Daily logs of members)
+    // 5. Fetch Flexi COMPLETED Logs (Traffic History)
     const { data: flexiLogs } = await supabase
       .from("dmd_flexi_logs")
       .select("check_in_time")
       .gte("check_in_time", `${startDateStr}T00:00:00`)
       .lte("check_in_time", `${endDateStr}T23:59:59`);
+
+    // 6. Fetch Flexi ACTIVE Members (Traffic Currently In Hub) -- NEW ADDITION
+    const { data: activeFlexi } = await supabase
+      .from("dmd_flexi_accounts")
+      .select("last_check_in")
+      .eq("status", "Checked In")
+      .gte("last_check_in", `${startDateStr}T00:00:00`)
+      .lte("last_check_in", `${endDateStr}T23:59:59`);
 
     // --- PROCESS DATA ---
     const grouped: Record<string, any> = {};
@@ -182,7 +191,6 @@ export default function Reports() {
     const pkgCounts: Record<string, number> = {};
     const demoCounts = { Student: 0, Examinee: 0, Regular: 0, Exclusive: 0, Flexi: 0 };
 
-    // Helper to init day
     const initDay = (d: string) => {
         if (!grouped[d]) grouped[d] = { timesheet: 0, pantry: 0, exclusive: 0, flexi: 0, checkIns: 0 };
     };
@@ -199,12 +207,10 @@ export default function Reports() {
       tTotal += amt;
       checkInCount++;
 
-      // Pkg Stats
       const pkg = item.package_type || "Unknown";
       pkgCounts[pkg] = (pkgCounts[pkg] || 0) + 1;
       pkgTotalCount++;
 
-      // Demo
       if (item.is_student) demoCounts.Student++;
       else if (item.is_board_examinee) demoCounts.Examinee++;
       else demoCounts.Regular++;
@@ -236,7 +242,7 @@ export default function Reports() {
         demoCounts.Flexi++; 
     });
 
-    // D. Flexi Logs (Traffic only)
+    // D. Flexi Logs (Completed Traffic)
     flexiLogs?.forEach((item) => {
         const d = format(new Date(item.check_in_time), "yyyy-MM-dd");
         initDay(d);
@@ -244,7 +250,15 @@ export default function Reports() {
         checkInCount++;
     });
 
-    // E. Pantry
+    // E. Flexi Active (Current Traffic) -- NEW PROCESSING
+    activeFlexi?.forEach((item) => {
+        const d = format(new Date(item.last_check_in), "yyyy-MM-dd");
+        initDay(d);
+        grouped[d].checkIns += 1;
+        checkInCount++;
+    });
+
+    // F. Pantry
     const itemCounts: Record<string, number> = {};
     pantryData?.forEach((item) => {
       const d = format(new Date(item.created_at), "yyyy-MM-dd");
@@ -331,7 +345,7 @@ export default function Reports() {
     const csvData = reportData.map((item) => ({
       Date: item.date,
       "Check-ins": item.checkIns,
-      "Packages": item.timesheet,
+      "Hub Income": item.timesheet,
       "Exclusive Income": item.exclusive,
       "Flexi Income": item.flexi,
       "Pantry Income": item.pantry,
@@ -345,8 +359,8 @@ export default function Reports() {
       <main className="container mx-auto p-6">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div className="mb-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+          <div>
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Wallet className="text-emerald-600" /> Growth Insights
             </h2>
@@ -370,14 +384,14 @@ export default function Reports() {
           </div>
         </div>
 
-        {/* 1. Summary Cards (Now 6 Columns - 2 Rows on smaller screens) */}
+        {/* 1. Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-xs font-medium text-slate-500 uppercase">Check-ins</CardTitle><User className="h-4 w-4 text-slate-500"></User></CardHeader>
             <CardContent><div className="text-2xl font-bold flex items-center gap-2"><Users className="h-5 w-5 text-slate-400"/> {totalCheckIns}</div></CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-xs font-medium text-slate-500 uppercase">Packages</CardTitle><Banknote className="h-4 w-4 text-slate-500"></Banknote></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-xs font-medium text-slate-500 uppercase">Hub Income</CardTitle><Banknote className="h-4 w-4 text-slate-500"></Banknote></CardHeader>
             <CardContent><div className="text-2xl font-bold text-blue-600">₱{timesheetTotal.toLocaleString()}</div></CardContent>
           </Card>
           <Card>
@@ -433,7 +447,7 @@ export default function Reports() {
                 <CardDescription>Bookings distribution</CardDescription>
               </CardHeader>
               <CardContent className="flex-1 pb-0 min-h-[200px]">
-                  <ChartContainer config={packageChartConfig} className="mx-auto aspect-square w-full">
+                  <ChartContainer config={packageChartConfig} className="mx-auto aspect-square max-h-[200px]">
                     <PieChart>
                       <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                       <Pie data={packageStats} dataKey="visitors" nameKey="name" innerRadius={50} strokeWidth={5}>
@@ -454,7 +468,7 @@ export default function Reports() {
               </CardContent>
             </Card>
 
-            {/* Pantry Best Sellers List (ADDED BACK) */}
+            {/* Pantry Best Sellers List */}
             <Card className="flex-1">
               <CardHeader className="pb-3 border-b">
                 <CardTitle className="items-center gap-2">
@@ -524,9 +538,7 @@ export default function Reports() {
         </div>
 
         {/* 4. Detailed Table */}
-        {/* Added 'w-full' and 'overflow-hidden' to the card container */}
         <div className="bg-white rounded-lg shadow border flex flex-col min-h-[500px] w-full overflow-hidden">
-          {/* Added this wrapper div to handle table scrolling internally */}
           <div className="overflow-x-auto flex-1">
             <Table>
               <TableHeader>
@@ -562,7 +574,6 @@ export default function Reports() {
             </Table>
           </div>
           
-          {/* Pagination */}
           <div className="p-4 border-t flex justify-between items-center bg-slate-50">
              <span className="text-sm text-slate-500">Page {page + 1} of {totalPages || 1}</span>
               <div className="flex gap-2">

@@ -43,75 +43,98 @@ export default function LoyaltyPage() {
   const [page, setPage] = useState(0);
 
   // --- Helper: Normalize Name Logic ---
-  // Transforms "CJ T. Sabijon" -> "cj sabijon"
-  // Transforms "CJ Sabijon" -> "cj sabijon"
   const getNormalizedKey = (fullName: string) => {
     if (!fullName) return "unknown";
-    
-    // 1. Remove special chars (like dots in middle initials) and extra spaces
     const cleanName = fullName.replace(/[.]/g, "").toLowerCase().trim();
-    
-    // 2. Split by space
     const parts = cleanName.split(/\s+/);
-    
-    // 3. If name is short (1 or 2 words), keep as is
     if (parts.length <= 2) {
         return cleanName;
     }
-
-    // 4. If long (3+ words), take First + Last only
-    // This ignores middle names/initials
     return `${parts[0]} ${parts[parts.length - 1]}`;
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      // Fetch bookings >= 3 hours
-      const { data } = await supabase
+
+      // 1. Fetch Regular Bookings (>= 3 hours)
+      const { data: bookingData } = await supabase
         .from("dmd_bookings")
-        .select("*")
-        .gte("duration_hours", 3)
-        .order("check_in_time", { ascending: false });
+        .select("customer_name, check_in_time, duration_hours")
+        .gte("duration_hours", 3);
 
-      if (data) {
-        const stats: Record<string, LoyaltyStat> = {};
+      // 2. Fetch Flexi Logs (>= 3 hours)
+      // We join dmd_flexi_accounts to get the client_name
+      const { data: flexiData } = await supabase
+        .from("dmd_flexi_logs")
+        .select(`
+            check_in_time, 
+            duration_hours, 
+            dmd_flexi_accounts ( client_name )
+        `)
+        .gte("duration_hours", 3);
 
-        // Aggregate Data
-        data.forEach((booking) => {
-          const rawName = booking.customer_name;
-          // Generate the unique key for grouping
-          const key = getNormalizedKey(rawName);
+      // 3. Merge Data Sources
+      const allRecords = [];
 
-          if (!stats[key]) {
-            stats[key] = {
-              name: rawName, // Start with the first name found
-              count: 0,
-              totalHours: 0,
-              lastVisit: booking.check_in_time,
-            };
-          }
-
-          // Update stats
-          stats[key].count += 1;
-          stats[key].totalHours += Number(booking.duration_hours);
-
-          // Logic: If this visit is more recent than what we have stored,
-          // update the "Last Visit" AND update the "Name" to the most recent format used.
-          if (new Date(booking.check_in_time) > new Date(stats[key].lastVisit)) {
-            stats[key].lastVisit = booking.check_in_time;
-            stats[key].name = rawName; 
-          }
+      // Add Bookings
+      bookingData?.forEach(item => {
+        allRecords.push({
+            name: item.customer_name,
+            date: item.check_in_time,
+            hours: item.duration_hours
         });
+      });
 
-        // Sort by Count (Desc) then Hours (Desc)
-        const sortedList = Object.values(stats).sort((a, b) => {
-          if (b.count === a.count) return b.totalHours - a.totalHours;
-          return b.count - a.count;
-        });
+      // Add Flexi Logs
+      flexiData?.forEach((item: any) => {
+        // Handle potential array or object from join
+        const name = Array.isArray(item.dmd_flexi_accounts) 
+            ? item.dmd_flexi_accounts[0]?.client_name 
+            : item.dmd_flexi_accounts?.client_name;
 
-        setLoyaltyData(sortedList);
-      }
+        if (name) {
+            allRecords.push({
+                name: name,
+                date: item.check_in_time,
+                hours: item.duration_hours
+            });
+        }
+      });
+
+      // 4. Process & Aggregate
+      const stats: Record<string, LoyaltyStat> = {};
+
+      allRecords.forEach((record) => {
+        const rawName = record.name;
+        const key = getNormalizedKey(rawName);
+
+        if (!stats[key]) {
+          stats[key] = {
+            name: rawName, 
+            count: 0,
+            totalHours: 0,
+            lastVisit: record.date,
+          };
+        }
+
+        stats[key].count += 1;
+        stats[key].totalHours += Number(record.hours);
+
+        // Update name to most recent usage
+        if (new Date(record.date) > new Date(stats[key].lastVisit)) {
+          stats[key].lastVisit = record.date;
+          stats[key].name = rawName; 
+        }
+      });
+
+      // 5. Sort (Count DESC, then Hours DESC)
+      const sortedList = Object.values(stats).sort((a, b) => {
+        if (b.count === a.count) return b.totalHours - a.totalHours;
+        return b.count - a.count;
+      });
+
+      setLoyaltyData(sortedList);
       setLoading(false);
     };
 
@@ -161,7 +184,6 @@ export default function LoyaltyPage() {
         {/* Top 3 Cards (Always visible) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {loading ? (
-             // Skeletons
              Array(3).fill(0).map((_, i) => (
                 <div key={i} className="h-32 bg-slate-200 rounded animate-pulse"></div>
              ))
@@ -218,7 +240,6 @@ export default function LoyaltyPage() {
             </div>
           </div>
 
-          {/* Added this wrapper div to handle table scrolling internally */}
           <div className="overflow-x-auto flex-1"> 
             <Table>
               <TableHeader>
@@ -251,7 +272,6 @@ export default function LoyaltyPage() {
                 ) : (
                   visibleData.map((stat) => (
                       <TableRow key={stat.name}>
-                      {/* Find the TRUE rank in the original full list */}
                       <TableCell className="font-medium">
                           {getRankIcon(
                           loyaltyData.findIndex((x) => x.name === stat.name)
@@ -269,7 +289,7 @@ export default function LoyaltyPage() {
                           </Badge>
                       </TableCell>
                       <TableCell className="text-center text-slate-600">
-                          {stat.totalHours} hrs
+                          {stat.totalHours.toFixed(1)} hrs
                       </TableCell>
                       <TableCell className="text-right text-slate-500 text-sm">
                           {format(new Date(stat.lastVisit), "MMM dd, yyyy")}
@@ -295,4 +315,4 @@ export default function LoyaltyPage() {
       </main>
     </div>
   );
-}
+} 

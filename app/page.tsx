@@ -362,7 +362,7 @@ export default function Dashboard() {
                                 <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-6 w-6 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                    className="h-6 w-6 text-blue-500 hover:text-blue-700 hover:bg-blue-50 animate-pulse"
                                     title="Extend Time"
                                     onClick={() => setExtendingBooking(booking)}
                                 >
