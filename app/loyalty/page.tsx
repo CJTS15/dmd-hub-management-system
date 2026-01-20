@@ -25,7 +25,7 @@ import {
   Loader2 
 } from "lucide-react";
 
-type Record = {
+type AllRecord = {
   name: string;
   date: string;
   hours: number;
@@ -82,7 +82,7 @@ export default function LoyaltyPage() {
 
       // 3. Merge Data Sources
       // Add type annotation to allRecords
-      const allRecords: Record[] = [];
+      const allRecords: AllRecord[] = [];
 
       // Add Bookings
       bookingData?.forEach(item => {
