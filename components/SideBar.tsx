@@ -26,7 +26,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar, // <--- Import this hook
+  useSidebar
 } from "@/components/ui/sidebar";
 
 // Menu items.
@@ -71,7 +71,7 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { state } = useSidebar(); // <--- Get current state (expanded/collapsed)
+  const { state } = useSidebar();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -79,10 +79,8 @@ export function AppSidebar() {
   };
 
   return (
-    // 1. Set collapsible to "icon"
     <Sidebar collapsible="icon">
-      
-      <SidebarHeader className="p-4 bg-white border-b h-16 flex items-center justify-center">
+      <SidebarHeader className="p-4 bg-white border-b">
         <Link href="/">
           {/* 2. Conditional Rendering for Logo based on state */}
           {state === "expanded" ? (
@@ -90,9 +88,9 @@ export function AppSidebar() {
               <Image
                 src="/dmd-logo-trans.webp"
                 alt="DMD Hub"
-                width={150}
+                width={180}
                 height={40}
-                className="w-auto h-14 object-contain"
+                className="w-auto h-16 object-contain"
                 priority
               />
             </div>
@@ -113,7 +111,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
-                    tooltip={item.title} // <--- 3. Add tooltip for hover effect when collapsed
+                    tooltip={item.title}
                     isActive={pathname === item.url}
                     className="h-12 text-slate-600 hover:text-blue-600 data-[active=true]:bg-blue-50 data-[active=true]:text-blue-700 font-medium transition-all duration-200"
                   >
@@ -134,7 +132,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton 
                 asChild 
-                tooltip="Sign Out" // <--- Add tooltip here too
+                tooltip="Sign Out" 
                 onClick={handleLogout}
                 className="h-10 text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer"
             >
