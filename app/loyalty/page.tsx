@@ -25,6 +25,12 @@ import {
   Loader2 
 } from "lucide-react";
 
+type Record = {
+  name: string;
+  date: string;
+  hours: number;
+};
+
 type LoyaltyStat = {
   name: string;
   count: number;
@@ -75,7 +81,8 @@ export default function LoyaltyPage() {
         .gte("duration_hours", 3);
 
       // 3. Merge Data Sources
-      const allRecords = [];
+      // Add type annotation to allRecords
+      const allRecords: Record[] = [];
 
       // Add Bookings
       bookingData?.forEach(item => {
